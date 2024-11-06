@@ -5,6 +5,9 @@ import threading
 # Initialize Socket.IO server
 sio = socketio.Client()
 connected = False
+reconnect_attempts = 0
+max_reconnect_attempts = 5
+reconnect_delay = 5  # Seconds
 
 # Events
 @sio.event
@@ -17,29 +20,36 @@ def connect():
     # Start continuous 'chop' emission in a background thread after connect
     chop_thread = threading.Thread(target=emit_chop_continuously)
     chop_thread.start()
+
 @sio.event
 def disconnect():
+    global connected, reconnect_attempts
     connected = False
     print("Disconnected from the bot.")
-    attempt_reconnect()
+    reconnect_attempts += 1
+    if reconnect_attempts <= max_reconnect_attempts:
+        print(f"Attempting to reconnect... (Attempt {reconnect_attempts}/{max_reconnect_attempts})")
+        reconnect()
+    else:
+        print(f"Maximum reconnect attempts ({max_reconnect_attempts}) reached. Exiting.")
+        exit(1)
 
-def attempt_reconnect():
-    retries = 5
-    while retries > 0:
-        try:
-            sio.connect('http://localhost:3000')  # Reconnect to the server
-            print("Reconnected successfully!")
-            break
-        except Exception as e:
-            print(f"Reconnect attempt failed: {e}")
-            retries -= 1
-            time.sleep(5)  # Wait 5 seconds before trying again
+def reconnect():
+    global connected, reconnect_attempts
+    try:
+        sio.connect('http://localhost:5000')  # Replace with your server's address
+        print("Reconnected to the bot!")
+    except Exception as e:
+        print(f"Reconnect attempt failed: {e}")
+        time.sleep(reconnect_delay)  # Wait before retrying
+        reconnect()  # Recursively retry reconnection
+
 
 # Function to continuously emit 'chop' command every 3 seconds
 def emit_chop_continuously():
     time.sleep(5)  # Delay before starting continuous emission
     while connected:
-        sio.emit('chop', {'action': 'chop'})
+        sio.emit('chop')
         print("Emitted chop command")
         time.sleep(5)  # Wait for 3 seconds before the next emission
 
