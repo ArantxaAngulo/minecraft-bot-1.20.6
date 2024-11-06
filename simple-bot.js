@@ -6,7 +6,7 @@ const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 //Setting up bot arguments necessary for proper connection
 const botArgs = {
     host: 'localhost', //will connect to local computer
-    port: '50367', //port of minecraft LAN multiplayer world
+    port: '52030', //port of minecraft LAN multiplayer world
     username: "DawgZilla_AI", 
     version: '1.20.6' //minecraft version
 };
@@ -39,9 +39,9 @@ bot.on('end', () => {
     console.log(`Disconnected`);
 });
 
-// Mineflayer built in event "spawn". When "bot" listens that "end" was succesfull, print lines
+// Mineflayer built in event "spawn". When "bot" listens that "spawn" was succesfull, print lines
 bot.on('spawn', async () => {
-    const x = 5; // Example target coordinates
+    const x = 5; // target coordinates
     const y = 88;
     const z = -5;
     console.log("Spawned in"); // On terminal
@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
         console.log('Chopping trees...');
 
         // Find and chop a specific type of wood within a 64-block radius
-        const woodBlockFound = bot.findBlock({ // findBlock is a Miineflayer built in function. woodBlockFound It will store the block info if the block is found 
+        const woodBlockFound = bot.findBlock({ // findBlock is a Mineflayer built in function. woodBlockFound It will store the block info if the block is found 
             matching: mcData.blocksByName.oak_log.id, // Block ID that the bot will look for
             maxDistance: 64 
         });
@@ -85,5 +85,5 @@ io.on('connection', (socket) => {
         } else {
             bot.chat('No oak log found within range :(');
         }
-    });
+    }); console.log('Chop ended');
 });
