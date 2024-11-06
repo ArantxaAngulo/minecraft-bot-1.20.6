@@ -127,36 +127,38 @@ function lookAtBlock(woodBlockFound){
     });
 }
 
-function chopWoodBlock(woodBlockFound){
+function chopWoodBlock(woodBlockFound) {
     console.log('woodBlockFound not null');
-    const { x, y, z } = woodBlockFound.position; // Get the block's position
+    const { x, y, z } = woodBlockFound.position;
     lookAtBlock(woodBlockFound);
-    // Use pathfinder to move to the block
     const movements = new Movements(bot);
     bot.pathfinder.setMovements(movements);
-     let retryCount = 0;
+    let retryCount = 0;
     const maxRetries = 3;
 
-    const chopTask = () => {
-        bot.pathfinder.goto(new goals.GoalBlock(x, y, z)).then(() => {
-            bot.dig(woodBlockFound, () => {
+    const chopTask = async () => {
+        try {
+        await bot.pathfinder.goto(new goals.GoalBlock(x, y, z));
+            await bot.dig(woodBlockFound, () => {
                 console.log('Chopping...');
                 checkInventory();
                 lookUpAfterChop();
                 setTimeout(findWoodBlock, 500);
             });
-        }).catch(err => {
-            if (err.message === 'GoalChanged: The goal was changed before it could be completed!' && retryCount < maxRetries) {
+        } catch(err) {
+            if (err.message === 'GoalChanged: The goal was changed before it could be completed!' || retryCount < maxRetries) {
                 console.log(`Retrying chop (attempt ${retryCount + 1}/${maxRetries})...`);
                 retryCount++;
-                setTimeout(chopTask, 1000); // Delay before retrying
+                setTimeout(chopTask, 3500); // Delay before retrying
             } else {
                 console.error('Failed to chop the block:', err);
+                findWoodBlock();
             }
-        });
+        }
     };
     chopTask();
 }
+
 
 function findWoodBlock(){
     // Find and chop a specific type of wood within a 64-block radius

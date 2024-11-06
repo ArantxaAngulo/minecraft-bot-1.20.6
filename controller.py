@@ -1,9 +1,8 @@
 import socketio
-import time
-import threading
+import asyncio
 
-# Initialize Socket.IO server
-sio = socketio.Client()
+# Initialize Socket.IO client
+sio = socketio.AsyncClient()
 connected = False
 reconnect_attempts = 0
 max_reconnect_attempts = 5
@@ -11,57 +10,54 @@ reconnect_delay = 5  # Seconds
 
 # Events
 @sio.event
-def connect():
+async def connect():
     global connected 
     connected = True
     print("Connected to the bot!")
-    sio.emit('chop')
+    await sio.emit('chop')
     print("Initial chop command emitted")
-    # Start continuous 'chop' emission in a background thread after connect
-    chop_thread = threading.Thread(target=emit_chop_continuously)
-    chop_thread.start()
+    # Start continuous 'chop' emission
+    asyncio.create_task(emit_chop_continuously())
 
 @sio.event
-def disconnect():
+async def disconnect():
     global connected, reconnect_attempts
     connected = False
     print("Disconnected from the bot.")
     reconnect_attempts += 1
     if reconnect_attempts <= max_reconnect_attempts:
         print(f"Attempting to reconnect... (Attempt {reconnect_attempts}/{max_reconnect_attempts})")
-        reconnect()
+        await reconnect()
     else:
         print(f"Maximum reconnect attempts ({max_reconnect_attempts}) reached. Exiting.")
-        exit(1)
+        await sio.disconnect()
 
-def reconnect():
-    global connected, reconnect_attempts
+# Async reconnection function
+async def reconnect():
+    global connected
+    await asyncio.sleep(reconnect_delay)
     try:
-        sio.connect('http://localhost:5000')  # Replace with your server's address
+        await sio.connect('http://localhost:3000')  # Replace with your server's address
         print("Reconnected to the bot!")
     except Exception as e:
         print(f"Reconnect attempt failed: {e}")
-        time.sleep(reconnect_delay)  # Wait before retrying
-        reconnect()  # Recursively retry reconnection
 
-
-# Function to continuously emit 'chop' command every 3 seconds
-def emit_chop_continuously():
-    time.sleep(5)  # Delay before starting continuous emission
+# Function to continuously emit 'chop' command every 9 seconds
+async def emit_chop_continuously():
+    await asyncio.sleep(5)  # Initial delay before starting continuous emission
     while connected:
-        sio.emit('chop')
+        await sio.emit('chop')
         print("Emitted chop command")
-        time.sleep(5)  # Wait for 3 seconds before the next emission
+        await sio.sleep(9)  # Wait for 9 seconds before the next emission
 
-# Connect to the Socket.IO server running on localhost: 3000
-sio.connect('http://localhost:3000')
-sio.wait() # Keep client listening for commands
+# Main function to connect the client
+async def main():
+    try:
+        await sio.connect('http://localhost:3000')
+        await sio.wait()  # Keep client listening for commands
+    except Exception as e:
+        print(f"Failed to connect: {e}")
+        await reconnect()
 
-
-#@sio.event
-#def chop(data):
-    #print("Emitted chop")
-    #sio.emit('chop')  # Emit 'chop' event with provided data
-
-# sio.disconnect()
-#sio.wait()
+# Run the main function
+asyncio.run(main())
