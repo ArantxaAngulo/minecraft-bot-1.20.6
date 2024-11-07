@@ -80,6 +80,11 @@ This bot is an [emailware](https://en.wiktionary.org/wiki/emailware). Meaning, i
 ## Dev Blog📚
 Welcome to my development journey of building my Minecraft bot! Here, I'll be documenting the complete, unfiltered (maddening, but rewarding!) process of creating a bot. If hearing about the hours I spent reading documentation in order to come up wit solutions for the challenges I encountered along the way sounds interesting, feel free to read! With this Dev Blog I intend to share my struggles, so that anyone in the future may have an easier and more straightforward coding. 
 
+<br>
+<h5 align="center">
+  ≻────────────────────────────────────────────── ⋆✩⋆ ────────────────────────────────────────────────≺
+</h5>
+
 <br><br>
 ## Related
 
