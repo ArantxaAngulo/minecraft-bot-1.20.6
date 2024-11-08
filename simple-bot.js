@@ -6,7 +6,7 @@ const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 //Setting up bot arguments necessary for proper connection
 const botArgs = {
     host: 'localhost', //will connect to local computer
-    port: '56769', //port of minecraft LAN multiplayer world
+    port: '58230', //port of minecraft LAN multiplayer world
     username: "DawgZilla_AI", 
     version: '1.20.6' //minecraft version
 };
@@ -127,7 +127,16 @@ function lookAtBlock(woodBlockFound){
     });
 }
 
+let isChopping = false;  // State flag to track if the bot is currently chopping
 function chopWoodBlock(woodBlockFound) {
+    if (isChopping) {
+        console.log('Bot is currently chopping, please wait...');
+        return;  // Exit the function if the bot is already chopping
+    }
+
+    // Set the flag to indicate the bot is now chopping
+    isChopping = true;
+
     console.log('woodBlockFound not null');
     const { x, y, z } = woodBlockFound.position;
     lookAtBlock(woodBlockFound);
@@ -149,7 +158,7 @@ function chopWoodBlock(woodBlockFound) {
             if (err.message === 'GoalChanged: The goal was changed before it could be completed!' || retryCount < maxRetries) {
                 console.log(`Retrying chop (attempt ${retryCount + 1}/${maxRetries})...`);
                 retryCount++;
-                setTimeout(chopTask, 3500); // Delay before retrying
+                setTimeout(chopTask, 5000); // Delay before retrying
             } else {
                 console.error('Failed to chop the block:', err);
                 findWoodBlock();
@@ -157,6 +166,11 @@ function chopWoodBlock(woodBlockFound) {
         }
     };
     chopTask();
+    // After chopping is completed, reset the flag
+    setTimeout(() => {
+        isChopping = false;
+        console.log('Chop task completed, ready for new task!');
+    }, 9000); // Assuming it takes ~9 seconds for the chop task to complete
 }
 
 
